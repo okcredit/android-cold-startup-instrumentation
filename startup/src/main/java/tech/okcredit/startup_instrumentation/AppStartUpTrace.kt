@@ -17,7 +17,7 @@ object AppStartUpTrace {
     var appOnCreateEndTime = 0L
     var firstDrawTime = 0L
 
-    data class Response(
+    data class AppStartUpMetrics(
         val totalTime: Long = firstDrawTime - processForkTime,
         val processForkToContentProvider: Long = contentProviderStartedTime - processForkTime,
         val contentProviderToAppStart: Long = appOnCreateTime - contentProviderStartedTime,
@@ -47,7 +47,7 @@ object AppStartUpTrace {
     /**
      * Uses for tracking App OnCreate Stop. Call this at the end of App OnCreate.
      */
-    fun stop(context: Context, responseCallback: (Response) -> Unit) {
+    fun stop(context: Context, responseCallback: (AppStartUpMetrics) -> Unit) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Executors.newSingleThreadExecutor().execute {
                 val appStartMeasureLifeCycleCallBacks = AppStartMeasureLifeCycleCallBacks(responseCallback)

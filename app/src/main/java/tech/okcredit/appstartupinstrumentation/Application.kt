@@ -9,8 +9,8 @@ class Application: Application() {
         AppStartUpTrace.start()
         super.onCreate()
 
-        AppStartUpTrace.stop(this) {
-            Log.v("StartUp Logs", it.toString())
+        AppStartUpTrace.stop(this) { appStartUpMetrics->
+            Log.v("StartUp Logs", appStartUpMetrics.toString())
         }
     }
 }

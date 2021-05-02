@@ -7,7 +7,7 @@ import android.os.*
 import androidx.annotation.RequiresApi
 import tech.okcredit.startup_instrumentation.AppStartUpTrace
 
-class AppStartMeasureLifeCycleCallBacks(private val responseCallback: (AppStartUpTrace.Response) -> Unit) : Application.ActivityLifecycleCallbacks {
+class AppStartMeasureLifeCycleCallBacks(private val responseCallback: (AppStartUpTrace.AppStartUpMetrics) -> Unit) : Application.ActivityLifecycleCallbacks {
 
     var firstDraw = false
 
@@ -38,7 +38,7 @@ class AppStartMeasureLifeCycleCallBacks(private val responseCallback: (AppStartU
                     AppStartUpTrace.firstDrawTime = SystemClock.uptimeMillis()
 
                     if (AppStartUpTrace.isValidAppStartUpMeasure()) {
-                        responseCallback.invoke(AppStartUpTrace.Response())
+                        responseCallback.invoke(AppStartUpTrace.AppStartUpMetrics())
                     }
                 }
             }
