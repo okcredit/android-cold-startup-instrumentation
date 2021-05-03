@@ -46,3 +46,13 @@ AppStartUpTrace.stop(this) { appStartUpMetrics->
         Log.v("First Draw", appStartUpMetrics.contentProviderToAppStart.toString()) //Time Taken from end of Application onCreate to drawing first frame
 }
 ```
+
+Note: it gives result only post Lollipop devices(21+)
+
+### Acknowledgements
+
+Thanks to [py - Pierre Yves Ricau](https://github.com/pyricau) for the detailed [article series](https://dev.to/pyricau/android-vitals-what-time-is-it-2oih) about cold startup. 
+
+### License
+
+TODO
