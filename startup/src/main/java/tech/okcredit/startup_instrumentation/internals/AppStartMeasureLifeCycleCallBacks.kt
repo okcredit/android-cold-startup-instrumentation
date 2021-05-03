@@ -9,7 +9,7 @@ import tech.okcredit.startup_instrumentation.AppStartUpTrace
 
 class AppStartMeasureLifeCycleCallBacks(private val responseCallback: (AppStartUpTrace.AppStartUpMetrics) -> Unit) : Application.ActivityLifecycleCallbacks {
 
-    var firstDraw = false
+    var firstDrawInvoked = false
 
     override fun onActivityPaused(activity: Activity) {
     }
@@ -31,10 +31,10 @@ class AppStartMeasureLifeCycleCallBacks(private val responseCallback: (AppStartU
 
     @RequiresApi(Build.VERSION_CODES.KITKAT)
     override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
-            if (!firstDraw) {
+            if (!firstDrawInvoked) {
                 activity.window?.decorView?.onNextDraw {
-                    if (firstDraw) return@onNextDraw
-                    firstDraw = true
+                    if (firstDrawInvoked) return@onNextDraw
+                    firstDrawInvoked = true
                     AppStartUpTrace.firstDrawTime = SystemClock.uptimeMillis()
 
                     if (AppStartUpTrace.isValidAppStartUpMeasure()) {

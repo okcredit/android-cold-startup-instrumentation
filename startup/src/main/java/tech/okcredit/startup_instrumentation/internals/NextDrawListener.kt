@@ -13,11 +13,11 @@ class NextDrawListener(
 ) : ViewTreeObserver.OnDrawListener {
 
     private val handler = Handler(Looper.getMainLooper())
-    var invoked = false
+    var invokedInitialOnDraw = false
 
     override fun onDraw() {
-        if (invoked) return
-        invoked = true
+        if (invokedInitialOnDraw) return
+        invokedInitialOnDraw = true
         onDrawCallback()
         handler.post {
             if (view.viewTreeObserver.isAlive) {
