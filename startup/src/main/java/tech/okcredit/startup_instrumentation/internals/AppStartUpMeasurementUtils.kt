@@ -8,6 +8,7 @@ import android.system.OsConstants
 import androidx.annotation.RequiresApi
 import java.io.BufferedReader
 import java.io.FileReader
+import java.util.concurrent.TimeUnit
 
 object AppStartUpMeasurementUtils {
 
@@ -26,7 +27,7 @@ object AppStartUpMeasurementUtils {
         val myPid = Process.myPid()
         val ticksAtProcessStart = readProcessStartTicks(myPid)
         val ticksPerSecond = Os.sysconf(OsConstants._SC_CLK_TCK)
-        return ticksAtProcessStart * 1000 / ticksPerSecond
+        return TimeUnit.SECONDS.toMillis(ticksAtProcessStart) / ticksPerSecond
     }
 
     private fun readProcessStartTicks(pid: Int): Long {
