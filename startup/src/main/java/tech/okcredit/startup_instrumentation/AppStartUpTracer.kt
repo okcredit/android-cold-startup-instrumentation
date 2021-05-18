@@ -9,7 +9,7 @@ import tech.okcredit.startup_instrumentation.internals.AppStartMeasureLifeCycleC
 import tech.okcredit.startup_instrumentation.internals.AppStartUpMeasurementUtils
 import java.util.concurrent.Executors
 
-object AppStartUpTrace {
+object AppStartUpTracer {
 
     var processForkTime = 0L
     var contentProviderStartedTime = 0L

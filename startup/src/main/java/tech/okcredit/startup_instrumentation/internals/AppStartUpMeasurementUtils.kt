@@ -30,6 +30,12 @@ object AppStartUpMeasurementUtils {
         return TimeUnit.SECONDS.toMillis(ticksAtProcessStart) / ticksPerSecond
     }
 
+    /*** On Linux & Android, there's a file called /proc/[pid]/stat that is readable and contains
+     stats for each process, including the process start time.
+    /proc/[pid]/stat is a file with one line of text, where each stat is separated by a space.
+    However, the second entry is the filename of the executable, which may contain spaces,
+    so we'll have to jump past it by looking for the first ) character. Once we've done that,
+    we can split the remaining string by spaces and pick the 20th entry at index 19. ****/
     private fun readProcessStartTicks(pid: Int): Long {
         val path = "/proc/$pid/stat"
         val stat = BufferedReader(FileReader(path)).use { reader ->

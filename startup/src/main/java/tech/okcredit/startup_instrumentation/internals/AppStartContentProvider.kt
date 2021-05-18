@@ -5,11 +5,11 @@ import android.content.ContentValues
 import android.database.Cursor
 import android.net.Uri
 import android.os.SystemClock
-import tech.okcredit.startup_instrumentation.AppStartUpTrace
+import tech.okcredit.startup_instrumentation.AppStartUpTracer
 
 class AppStartContentProvider : ContentProvider() {
     override fun onCreate(): Boolean {
-        AppStartUpTrace.contentProviderStartedTime = SystemClock.uptimeMillis()
+        AppStartUpTracer.contentProviderStartedTime = SystemClock.uptimeMillis()
         return true
     }
 
