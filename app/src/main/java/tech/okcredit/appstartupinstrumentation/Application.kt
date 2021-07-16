@@ -2,14 +2,14 @@ package tech.okcredit.appstartupinstrumentation
 
 import android.app.Application
 import android.util.Log
-import tech.okcredit.startup_instrumentation.AppStartUpTrace
+import tech.okcredit.startup_instrumentation.AppStartUpTracer
 
 class Application: Application() {
     override fun onCreate() {
-        AppStartUpTrace.start()
+        AppStartUpTracer.start() //Should be at the end of App.onCreate()
         super.onCreate()
 
-        AppStartUpTrace.stop(this) { appStartUpMetrics->
+        AppStartUpTracer.stop(this) { appStartUpMetrics-> //Should be at the end of App.onCreate()
             Log.v("StartUp Logs", appStartUpMetrics.toString())
         }
     }

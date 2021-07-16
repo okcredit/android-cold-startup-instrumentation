@@ -5,9 +5,9 @@ import android.app.Activity
 import android.app.Application
 import android.os.*
 import androidx.annotation.RequiresApi
-import tech.okcredit.startup_instrumentation.AppStartUpTrace
+import tech.okcredit.startup_instrumentation.AppStartUpTracer
 
-class AppStartMeasureLifeCycleCallBacks(private val responseCallback: (AppStartUpTrace.AppStartUpMetrics) -> Unit) : Application.ActivityLifecycleCallbacks {
+class AppStartMeasureLifeCycleCallBacks(private val responseCallback: (AppStartUpTracer.AppStartUpMetrics) -> Unit) : Application.ActivityLifecycleCallbacks {
 
     var firstDrawInvoked = false
 
@@ -35,10 +35,10 @@ class AppStartMeasureLifeCycleCallBacks(private val responseCallback: (AppStartU
                 activity.window?.decorView?.onNextDraw {
                     if (firstDrawInvoked) return@onNextDraw
                     firstDrawInvoked = true
-                    AppStartUpTrace.firstDrawTime = SystemClock.uptimeMillis()
+                    AppStartUpTracer.firstDrawTime = SystemClock.uptimeMillis()
 
-                    if (AppStartUpTrace.isValidAppStartUpMeasure()) {
-                        responseCallback.invoke(AppStartUpTrace.AppStartUpMetrics())
+                    if (AppStartUpTracer.isValidAppStartUpMeasure()) {
+                        responseCallback.invoke(AppStartUpTracer.AppStartUpMetrics())
                     }
                 }
             }

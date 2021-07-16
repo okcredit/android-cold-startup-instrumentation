@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewTreeObserver
 import androidx.annotation.RequiresApi
 
+@RequiresApi(Build.VERSION_CODES.JELLY_BEAN)
 class NextDrawListener(
     private val view: View,
     val onDrawCallback: () -> Unit
@@ -15,6 +16,7 @@ class NextDrawListener(
     private val handler = Handler(Looper.getMainLooper())
     var invokedInitialOnDraw = false
 
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN)
     override fun onDraw() {
         if (invokedInitialOnDraw) return
         invokedInitialOnDraw = true
@@ -44,6 +46,7 @@ class NextDrawListener(
             }
         }
 
+        @RequiresApi(Build.VERSION_CODES.JELLY_BEAN)
         internal fun View.addNextDrawListener(callback: () -> Unit) {
             viewTreeObserver.addOnDrawListener(
                 NextDrawListener(this, callback)
