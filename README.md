@@ -1,5 +1,5 @@
-# android-startup-instrumentation
-This is an instrumentation library for Android Startup which gives duration for each phase of App Startup.
+# android-cold-startup-instrumentation
+This is an instrumentation library for Android Cold Startup which gives duration for each [phase](#phases-of-app-startup) of App Startup.
 
 
 ### Gradle Setup
@@ -10,12 +10,12 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.anjalsaneen:android-startup-instrumentation:1.0-alpha'
+    implementation 'com.github.anjalsaneen:android-startup-instrumentation:1.0-beta'
 }
 ```
 
 ### Usage
-Add AppStartUpTrace.start()(at the start of onCreate) and AppStartUpTrace.stop()(at the end of onCreate) inside Application onCreate method.
+Add `AppStartUpTrace.start()` (at the start of onCreate) and `AppStartUpTrace.stop()` (at the end of onCreate) inside Application onCreate method.
 
 ```
 override fun onCreate() {
@@ -35,7 +35,7 @@ override fun onCreate() {
 
 ### Result
 
-On AppStartUpTrace.stop() 2nd parameter it takes a lambda which returns Startup logs at the time of the first draw which has duration for each step during App StartUp.
+On AppStartUpTrace.stop() 2nd parameter takes a lambda which returns Startup logs at the time of the first draw which has duration for each phase during App StartUp.
 
 ```
 AppStartUpTrace.stop(this) { appStartUpMetrics->
@@ -49,10 +49,36 @@ AppStartUpTrace.stop(this) { appStartUpMetrics->
 
 Note: it gives result only post Lollipop devices(21+)
 
+### Phases of App Startup
+
+- **Process Fork to Content Provider** : Time Duration between App process forked from Zygote and First Initialization of content provider. Creating the app object and Launching the main thread will be happening here. developers have little influence on the improvement here.
+
+- **Content Provider to App OnCreate()** : Time Duration between First Initialization of the content provider to Start of App.OnCreate(). it includes All time taken for Content providers in the app.
+
+- **App OnCreate() Start to App OnCreate() End** : Time Duration between Start of App.OnCreate() to End of App.OnCreate(). it includes time taken for App.OnCreate()
+
+- **App OnCreate() Start to App OnCreate() End** : Time Duration between End of App.OnCreate() to First Draw of the frame. it includes time taken for Initial activity initialisation, inflating the first layout, onMeasure() and onDraw() of for initial layout.
+
+
+<img width="1331" alt="Screenshot 2021-07-16 at 4 38 24 PM" src="https://user-images.githubusercontent.com/43947967/125938714-483d0f14-96be-4c3d-944f-941130912626.png">
+
+
 ### Acknowledgements
 
-Thanks to [py - Pierre Yves Ricau](https://github.com/pyricau) for the detailed [article series](https://dev.to/pyricau/android-vitals-what-time-is-it-2oih) about cold startup. 
+Thanks to [py - Pierre Yves Ricau](https://github.com/pyricau) for this detailed [article series](https://dev.to/pyricau/android-vitals-what-time-is-it-2oih) about cold startup. it helps to get code snippet for this library.
 
 ### License
 
-TODO
+    Copyright 2021 OkCredit.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
