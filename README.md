@@ -10,7 +10,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.anjalsaneen:android-startup-instrumentation:1.0-beta'
+    implementation 'com.github.okcredit:android-cold-startup-instrumentation:1.0-beta'
 }
 ```
 
