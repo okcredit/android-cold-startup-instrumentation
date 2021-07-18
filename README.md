@@ -57,7 +57,7 @@ Note: it gives result only post Lollipop devices(21+)
 
 - **App OnCreate() Start to App OnCreate() End** : Time Duration between Start of App.OnCreate() to End of App.OnCreate(). it includes time taken for App.OnCreate()
 
-- **App OnCreate() Start to App OnCreate() End** : Time Duration between End of App.OnCreate() to First Draw of the frame. it includes time taken for Initial activity initialisation, inflating the first layout, onMeasure() and onDraw() of for initial layout.
+- **App OnCreate() End to First Draw of the frame** : Time Duration between End of App.OnCreate() to First Draw of the frame. it includes time taken for Initial activity initialisation, inflating the first layout, onMeasure() and onDraw() of for initial layout.
 
 
 <img width="1331" alt="Screenshot 2021-07-16 at 4 38 24 PM" src="https://user-images.githubusercontent.com/43947967/125938714-483d0f14-96be-4c3d-944f-941130912626.png">
