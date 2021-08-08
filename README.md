@@ -42,8 +42,8 @@ AppStartUpTracer.stop(this) { appStartUpMetrics->
         Log.v("Total Time", appStartUpMetrics.totalTime.toString()) // Time Taken For Cold StartUp
         Log.v("Process Fork To CP", appStartUpMetrics.processForkToContentProvider.toString()) // Time Taken From Process start to initialising content provider
         Log.v("Content provider", appStartUpMetrics.contentProviderToAppStart.toString()) //Time Taken for initialising content providers
-        Log.v("Application Create", appStartUpMetrics.contentProviderToAppStart.toString()) //Time Taken for running Application onCreate
-        Log.v("First Draw", appStartUpMetrics.contentProviderToAppStart.toString()) //Time Taken from end of Application onCreate to drawing first frame
+        Log.v("Application Create", appStartUpMetrics.applicationOnCreateTime.toString()) //Time Taken for running Application onCreate
+        Log.v("First Draw", appStartUpMetrics.appOnCreateEndToFirstDraw.toString()) //Time Taken from end of Application onCreate to drawing first frame
 }
 ```
 
