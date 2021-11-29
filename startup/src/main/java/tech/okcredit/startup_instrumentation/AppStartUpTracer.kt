@@ -3,6 +3,7 @@ package tech.okcredit.startup_instrumentation
 import android.app.Application
 import android.content.Context
 import android.os.Build
+import android.os.Process
 import android.os.SystemClock
 import org.jetbrains.annotations.NonNls
 import tech.okcredit.startup_instrumentation.internals.AppStartMeasureLifeCycleCallBacks
@@ -53,7 +54,11 @@ object AppStartUpTracer {
                 val appStartMeasureLifeCycleCallBacks = AppStartMeasureLifeCycleCallBacks(responseCallback)
                 (context.applicationContext as Application).registerActivityLifecycleCallbacks(appStartMeasureLifeCycleCallBacks)
 
-                processForkTime = AppStartUpMeasurementUtils.getProcessForkTime()
+                processForkTime = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                     Process.getStartUptimeMillis()
+                } else {
+                    AppStartUpMeasurementUtils.getProcessForkTime()
+                }
                 appOnCreateEndTime = SystemClock.uptimeMillis()
 
             }
