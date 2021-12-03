@@ -5,7 +5,7 @@
     <application>
 
         <provider
-            android:name="tech.okcredit.startup_instrumentation.internals.AppStartContentProvider"
+            android:name="tech.okcredit.startup_instrumentation.internals.content_provider.AppStartContentProvider"
             android:authorities="${applicationId}.appStartProvider"
             android:initOrder="2147483647"
             android:exported="false" />

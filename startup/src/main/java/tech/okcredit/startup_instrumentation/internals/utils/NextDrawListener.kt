@@ -1,4 +1,4 @@
-package tech.okcredit.startup_instrumentation.internals
+package tech.okcredit.startup_instrumentation.internals.utils
 
 import android.os.Build
 import android.os.Handler

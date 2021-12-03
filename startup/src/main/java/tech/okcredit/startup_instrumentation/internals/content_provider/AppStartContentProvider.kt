@@ -1,4 +1,4 @@
-package tech.okcredit.startup_instrumentation.internals
+package tech.okcredit.startup_instrumentation.internals.content_provider
 
 import android.content.ContentProvider
 import android.content.ContentValues

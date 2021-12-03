@@ -1,11 +1,10 @@
 package tech.okcredit.startup_instrumentation
 
-import org.junit.Test
-
 import org.junit.Assert.*
+import org.junit.Test
+import tech.okcredit.startup_instrumentation.internals.PreConditionStartUp
 
-class ValidAppStartUpUnitTest {
-
+class PreConditionStartUpUnitTest {
 
     @Test
     fun `should valid only all values are present`() {
@@ -15,7 +14,7 @@ class ValidAppStartUpUnitTest {
         AppStartUpTracer.appOnCreateEndTime = 400
         AppStartUpTracer.firstDrawTime = 500
 
-        assertEquals(AppStartUpTracer.isValidAppStartUpMeasure(), true)
+        assertEquals(PreConditionStartUp.isValidAppStartUpMeasure(), true)
     }
 
     @Test
@@ -26,7 +25,7 @@ class ValidAppStartUpUnitTest {
         AppStartUpTracer.appOnCreateEndTime = 400
         AppStartUpTracer.firstDrawTime = 500
 
-        assertEquals(AppStartUpTracer.isValidAppStartUpMeasure(), false)
+        assertEquals(PreConditionStartUp.isValidAppStartUpMeasure(), false)
     }
 
     @Test
@@ -37,7 +36,7 @@ class ValidAppStartUpUnitTest {
         AppStartUpTracer.appOnCreateEndTime = 400
         AppStartUpTracer.firstDrawTime = 500
 
-        assertEquals(AppStartUpTracer.isValidAppStartUpMeasure(), false)
+        assertEquals(PreConditionStartUp.isValidAppStartUpMeasure(), false)
     }
 
     @Test
@@ -48,7 +47,7 @@ class ValidAppStartUpUnitTest {
         AppStartUpTracer.appOnCreateEndTime = 400
         AppStartUpTracer.firstDrawTime = 500
 
-        assertEquals(AppStartUpTracer.isValidAppStartUpMeasure(), false)
+        assertEquals(PreConditionStartUp.isValidAppStartUpMeasure(), false)
     }
 
     @Test
@@ -59,7 +58,7 @@ class ValidAppStartUpUnitTest {
         AppStartUpTracer.appOnCreateEndTime = 0
         AppStartUpTracer.firstDrawTime = 500
 
-        assertEquals(AppStartUpTracer.isValidAppStartUpMeasure(), false)
+        assertEquals(PreConditionStartUp.isValidAppStartUpMeasure(), false)
     }
 
     @Test
@@ -70,7 +69,7 @@ class ValidAppStartUpUnitTest {
         AppStartUpTracer.appOnCreateEndTime = 500
         AppStartUpTracer.firstDrawTime = 0
 
-        assertEquals(AppStartUpTracer.isValidAppStartUpMeasure(), false)
+        assertEquals(PreConditionStartUp.isValidAppStartUpMeasure(), false)
     }
 
     @Test
@@ -81,6 +80,6 @@ class ValidAppStartUpUnitTest {
         AppStartUpTracer.appOnCreateEndTime = 500
         AppStartUpTracer.firstDrawTime = 50000
 
-        assertEquals(AppStartUpTracer.isValidAppStartUpMeasure(), false)
+        assertEquals(PreConditionStartUp.isValidAppStartUpMeasure(), false)
     }
 }

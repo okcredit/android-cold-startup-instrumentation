@@ -1,46 +1,192 @@
 package tech.okcredit.startup_instrumentation.internals
 
-import tech.okcredit.startup_instrumentation.internals.NextDrawListener.Companion.onNextDraw
 import android.app.Activity
+import android.app.ActivityManager
 import android.app.Application
 import android.os.*
 import androidx.annotation.RequiresApi
 import tech.okcredit.startup_instrumentation.AppStartUpTracer
+import tech.okcredit.startup_instrumentation.AppStartUpTracer.currentAppLaunchProcessed
+import tech.okcredit.startup_instrumentation.AppStartUpTracer.isFirstPostExecuted
+import tech.okcredit.startup_instrumentation.AppStartUpTracer.lastAppPauseTime
+import tech.okcredit.startup_instrumentation.internals.GetAppUpdateInfo.Companion.trackAppUpgrade
+import tech.okcredit.startup_instrumentation.internals.app_lifecycle.RecordOfActivityLifecycle.createdActivityHashes
+import tech.okcredit.startup_instrumentation.internals.app_lifecycle.RecordOfActivityLifecycle.recordActivityCreated
+import tech.okcredit.startup_instrumentation.internals.app_lifecycle.RecordOfActivityLifecycle.recordActivityResumed
+import tech.okcredit.startup_instrumentation.internals.app_lifecycle.RecordOfActivityLifecycle.recordActivityStarted
+import tech.okcredit.startup_instrumentation.internals.app_lifecycle.RecordOfActivityLifecycle.resumedActivityHashes
+import tech.okcredit.startup_instrumentation.internals.app_lifecycle.RecordOfActivityLifecycle.startedActivityHashes
+import tech.okcredit.startup_instrumentation.internals.data.AppLaunchMetrics
+import tech.okcredit.startup_instrumentation.internals.data.AppUpdateData
+import tech.okcredit.startup_instrumentation.internals.data.Temperature
+import tech.okcredit.startup_instrumentation.internals.utils.AppStartUpMeasurementUtils
+import tech.okcredit.startup_instrumentation.internals.utils.AppStartUpMeasurementUtils.getProcessInfo
+import tech.okcredit.startup_instrumentation.internals.utils.NextDrawListener.Companion.onNextDraw
+import java.lang.IllegalStateException
 
-class AppStartMeasureLifeCycleCallBacks(private val responseCallback: (AppStartUpTracer.AppStartUpMetrics) -> Unit) : Application.ActivityLifecycleCallbacks {
+@RequiresApi(Build.VERSION_CODES.KITKAT)
+internal class AppStartMeasureLifeCycleCallBacks(
+    private val context: Application,
+    private val firstDrawColdStartUpCallback: (AppStartUpTracer.AppStartUpMetrics) -> Unit,
+    private val appLaunchCallback: (AppLaunchMetrics) -> Unit
+) :
+    Application.ActivityLifecycleCallbacks {
 
-    var firstDrawInvoked = false
+    private var firstDrawInvoked = false
+    private var firstActivityCreated = false
+    private var firstActivityResumed = false
 
-    override fun onActivityPaused(activity: Activity) {
+    override fun onActivityPreResumed(activity: Activity) {
+        recordActivityResumed(activity)
     }
 
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun onActivityResumed(activity: Activity) {
+        val identityHash = recordActivityResumed(activity)
+
+        if (!firstActivityResumed) {
+            firstActivityResumed = true
+            AppStartUpTracer.firstActivityResumeTime = SystemClock.uptimeMillis()
+        }
+
+
+        AppStartUpMeasurementUtils.getSingleThreadExecutorForLaunchTracker().execute {
+            val hadResumedActivity = resumedActivityHashes.size > 1
+            if (!hadResumedActivity && !currentAppLaunchProcessed) {
+                currentAppLaunchProcessed = true
+
+                val processInfo: ActivityManager.RunningAppProcessInfo? =
+                    activity.getProcessInfo()
+
+                when {
+                    isFirstPostExecuted -> { // Hot and Warm StartUp
+                        val onCreateRecord = createdActivityHashes.getValue(identityHash)
+
+                        val temperature = if (onCreateRecord.sameMessage) {
+                            if (onCreateRecord.hasSavedState) {
+                                Temperature.CREATED_WITH_STATE
+                            } else {
+                                Temperature.CREATED_NO_STATE
+                            }
+                        } else {
+                            val onStartRecord = startedActivityHashes.getValue(identityHash)
+                            if (onStartRecord.sameMessage) {
+                                Temperature.STARTED
+                            } else {
+                                Temperature.RESUMED
+                            }
+                        }
+
+
+                        activity.window?.decorView?.onNextDraw {
+                            appLaunchCallback.invoke(
+                                AppLaunchMetrics.WarmAndColdStartUpData(
+                                    temperature = temperature,
+                                    durationFromLastAppStop = lastAppPauseTime?.let { SystemClock.uptimeMillis() - it },
+                                    timeBetweenResumeToFirstDraw = SystemClock.uptimeMillis() - resumedActivityHashes.getValue(
+                                        identityHash
+                                    ).start,
+                                    timeBetweenCreatedToResume = resumedActivityHashes.getValue(
+                                        identityHash
+                                    ).start - createdActivityHashes.getValue(identityHash).start,
+                                    timeBetweenStartToResume = resumedActivityHashes.getValue(
+                                        identityHash
+                                    ).start - startedActivityHashes.getValue(identityHash).start,
+                                    importance = processInfo?.importance,
+                                    resumeActivityName = onCreateRecord.activityName,
+                                    resumeActivityReferrer = onCreateRecord.referrer,
+                                    resumeActivityIntentData = onCreateRecord.intent
+                                )
+                            )
+                        }
+                    }
+                    processInfo?.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND -> {
+                        val appUpdateData: AppUpdateData = context.trackAppUpgrade()
+
+                        activity.window?.decorView?.onNextDraw {
+                            AppStartUpTracer.firstDrawTime = SystemClock.uptimeMillis()
+
+                            if (PreConditionStartUp.isValidAppStartUpMeasure()) {
+                                appLaunchCallback.invoke(
+                                    AppLaunchMetrics.ColdStartUpData(
+                                        startUpMetrics = AppStartUpTracer.AppStartUpMetrics(),
+                                        appUpdateData = appUpdateData,
+                                        firstActivityIntent = AppStartUpTracer.firstActivityIntent,
+                                        firstActivityName = AppStartUpTracer.firstActivityName,
+                                        firstActivityReferrer = AppStartUpTracer.firstActivityReferrer,
+                                    )
+                                )
+                            } else {
+                                appLaunchCallback.invoke(
+                                    AppLaunchMetrics.ErrorRetrievingAppLaunchData(
+                                        IllegalStateException(PreConditionStartUp.findErrorReason())
+                                    )
+                                )
+                            }
+                        }
+                    } else -> {
+                    appLaunchCallback.invoke(
+                        AppLaunchMetrics.ErrorRetrievingAppLaunchData(
+                            IllegalStateException("App Launched from background")
+                        )
+                    )
+                }
+                }
+            }
+        }
+    }
+
+    override fun onActivityPaused(activity: Activity) {
+        resumedActivityHashes -= Integer.toHexString(System.identityHashCode(activity))
+    }
+
+    override fun onActivityPreStarted(activity: Activity) {
+        recordActivityStarted(activity)
     }
 
     override fun onActivityStarted(activity: Activity) {
-    }
-
-    override fun onActivityDestroyed(activity: Activity) {
-    }
-
-    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {
+        recordActivityStarted(activity)
     }
 
     override fun onActivityStopped(activity: Activity) {
+        startedActivityHashes -= Integer.toHexString(System.identityHashCode(activity))
     }
 
-    @RequiresApi(Build.VERSION_CODES.KITKAT)
-    override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
-            if (!firstDrawInvoked) {
-                activity.window?.decorView?.onNextDraw {
-                    if (firstDrawInvoked) return@onNextDraw
-                    firstDrawInvoked = true
-                    AppStartUpTracer.firstDrawTime = SystemClock.uptimeMillis()
+    override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
 
-                    if (AppStartUpTracer.isValidAppStartUpMeasure()) {
-                        responseCallback.invoke(AppStartUpTracer.AppStartUpMetrics())
-                    }
+    override fun onActivityPreCreated(activity: Activity, savedInstanceState: Bundle?) {
+        recordActivityCreated(activity, savedInstanceState)
+    }
+
+    override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+        recordActivityCreated(activity, savedInstanceState)
+
+        if (!firstActivityCreated) {
+            firstActivityCreated = true
+
+            AppStartUpTracer.firstActivityCreatedTime = SystemClock.uptimeMillis()
+            AppStartUpTracer.firstActivityName = activity.localClassName
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+                AppStartUpTracer.firstActivityReferrer = activity.referrer.toString()
+            }
+            AppStartUpTracer.firstActivityIntent = activity.intent
+        }
+
+        if (!firstDrawInvoked) {
+            activity.window?.decorView?.onNextDraw {
+                if (firstDrawInvoked) return@onNextDraw
+                firstDrawInvoked = true
+                AppStartUpTracer.firstDrawTime = SystemClock.uptimeMillis()
+
+                if (PreConditionStartUp.isValidAppStartUpMeasure()) {
+                    firstDrawColdStartUpCallback.invoke(AppStartUpTracer.AppStartUpMetrics())
                 }
             }
+        }
+    }
+
+    override fun onActivityDestroyed(activity: Activity) {
+        createdActivityHashes -= Integer.toHexString(System.identityHashCode(activity))
     }
 }

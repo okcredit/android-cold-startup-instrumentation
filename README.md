@@ -20,12 +20,12 @@ Add `AppStartUpTracer.start()` (at the start of onCreate) and `AppStartUpTracer.
 ```
 override fun onCreate() {
     AppStartUpTracer.start() //Should be before super.onCreate()
-    
+
     super.onCreate()
         ...
         ...
         ...
-        
+
 
     AppStartUpTracer.stop(this) { appStartUpMetrics->
         Log.v("StartUp Logs", appStartUpMetrics.toString())
