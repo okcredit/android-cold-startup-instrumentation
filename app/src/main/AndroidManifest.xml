@@ -23,9 +23,6 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name=".notification.NotificationActivity" />
-
         <provider
             android:name=".DummyContentProvider"
             android:authorities="${applicationId}.dummy"

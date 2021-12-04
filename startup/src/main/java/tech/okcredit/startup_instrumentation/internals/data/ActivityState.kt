@@ -1,6 +1,6 @@
 package tech.okcredit.startup_instrumentation.internals.data
 
-enum class Temperature {
+enum class ActivityState {
     /**
      * Warm start: the activity was created with no state bundle and then resumed.
      */

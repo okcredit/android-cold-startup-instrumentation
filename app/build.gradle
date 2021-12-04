@@ -41,6 +41,5 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
     testImplementation 'junit:junit:4.13.2'
 
-//    implementation 'com.github.okcredit:android-cold-startup-instrumentation:appLaunchTracking-SNAPSHOT'
     implementation project(':startup')
 }

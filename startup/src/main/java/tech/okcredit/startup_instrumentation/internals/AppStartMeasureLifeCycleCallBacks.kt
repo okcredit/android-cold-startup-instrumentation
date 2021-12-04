@@ -18,7 +18,8 @@ import tech.okcredit.startup_instrumentation.internals.app_lifecycle.RecordOfAct
 import tech.okcredit.startup_instrumentation.internals.app_lifecycle.RecordOfActivityLifecycle.startedActivityHashes
 import tech.okcredit.startup_instrumentation.internals.data.AppLaunchMetrics
 import tech.okcredit.startup_instrumentation.internals.data.AppUpdateData
-import tech.okcredit.startup_instrumentation.internals.data.Temperature
+import tech.okcredit.startup_instrumentation.internals.data.ActivityState
+import tech.okcredit.startup_instrumentation.internals.data.WarmAndHotStartUpMetrics
 import tech.okcredit.startup_instrumentation.internals.utils.AppStartUpMeasurementUtils
 import tech.okcredit.startup_instrumentation.internals.utils.AppStartUpMeasurementUtils.getProcessInfo
 import tech.okcredit.startup_instrumentation.internals.utils.NextDrawListener.Companion.onNextDraw
@@ -64,34 +65,36 @@ internal class AppStartMeasureLifeCycleCallBacks(
 
                         val temperature = if (onCreateRecord.sameMessage) {
                             if (onCreateRecord.hasSavedState) {
-                                Temperature.CREATED_WITH_STATE
+                                ActivityState.CREATED_WITH_STATE
                             } else {
-                                Temperature.CREATED_NO_STATE
+                                ActivityState.CREATED_NO_STATE
                             }
                         } else {
                             val onStartRecord = startedActivityHashes.getValue(identityHash)
                             if (onStartRecord.sameMessage) {
-                                Temperature.STARTED
+                                ActivityState.STARTED
                             } else {
-                                Temperature.RESUMED
+                                ActivityState.RESUMED
                             }
                         }
 
 
                         activity.window?.decorView?.onNextDraw {
                             appLaunchCallback.invoke(
-                                AppLaunchMetrics.WarmAndColdStartUpData(
-                                    temperature = temperature,
+                                AppLaunchMetrics.WarmAndHotStartUpData(
+                                    warmAndHotStartUpMetrics = WarmAndHotStartUpMetrics(
+                                        timeBetweenResumeToFirstDraw = SystemClock.uptimeMillis() - resumedActivityHashes.getValue(
+                                            identityHash
+                                        ).start,
+                                        timeBetweenCreatedToResume = resumedActivityHashes.getValue(
+                                            identityHash
+                                        ).start - createdActivityHashes.getValue(identityHash).start,
+                                        timeBetweenStartToResume = resumedActivityHashes.getValue(
+                                            identityHash
+                                        ).start - startedActivityHashes.getValue(identityHash).start,
+                                    ),
+                                    activityState = temperature,
                                     durationFromLastAppStop = lastAppPauseTime?.let { SystemClock.uptimeMillis() - it },
-                                    timeBetweenResumeToFirstDraw = SystemClock.uptimeMillis() - resumedActivityHashes.getValue(
-                                        identityHash
-                                    ).start,
-                                    timeBetweenCreatedToResume = resumedActivityHashes.getValue(
-                                        identityHash
-                                    ).start - createdActivityHashes.getValue(identityHash).start,
-                                    timeBetweenStartToResume = resumedActivityHashes.getValue(
-                                        identityHash
-                                    ).start - startedActivityHashes.getValue(identityHash).start,
                                     importance = processInfo?.importance,
                                     resumeActivityName = onCreateRecord.activityName,
                                     resumeActivityReferrer = onCreateRecord.referrer,

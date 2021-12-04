@@ -1,5 +1,8 @@
 package tech.okcredit.startup_instrumentation.internals.data
 
+/**
+ * Info regarding app updates like app starts after first install, an update, or a crash.
+ */
 data class AppUpdateData(
     val status: AppUpdateStartStatus,
 
