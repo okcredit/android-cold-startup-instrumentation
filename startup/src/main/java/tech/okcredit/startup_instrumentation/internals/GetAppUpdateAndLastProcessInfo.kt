@@ -1,6 +1,8 @@
 package tech.okcredit.startup_instrumentation.internals
 
+import android.app.ActivityManager
 import android.app.Application
+import android.app.ApplicationExitInfo
 import android.content.Context
 import android.os.Build
 import android.os.SystemClock
@@ -10,26 +12,14 @@ import tech.okcredit.startup_instrumentation.internals.data.AppUpdateStartStatus
 /**
  * Collect info regarding app updates like app starts after first install, an update, or a crash.
  */
-internal class GetAppUpdateInfo private constructor(
+internal class GetAppUpdateAndLastProcessInfo private constructor(
     private val application: Application
 ) {
 
-    /**
-     * Note: initialization here isn't normally a blocking operation, it just starts an async load.
-     * The first read will be blocking until the shared preferences are loaded in memory, which is
-     * why [readAndUpdate] is called from a background thread.
-     *
-     * However some versions of Android trigger strict mode IO on shared pref retrieval, hence why
-     * this is a lazy.
-     */
     private val preferences by lazy {
         application.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
     }
 
-    /**
-     * This is called from a background thread because shared preferences reads are blocking
-     * until loaded.
-     */
     private fun readAndUpdate(): AppUpdateData {
         val appPackageInfo = application.packageManager.getPackageInfo(application.packageName, 0)!!
 
@@ -115,6 +105,7 @@ internal class GetAppUpdateInfo private constructor(
             .map { it.toInt() }
 
         val lastColdLaunchTime = preferences.getLong(LAST_COLD_LAUNCH_TIME, -1L)
+        val lastExitInformation = getLastExitInformation()
 
         return AppUpdateData(
             status = status,
@@ -126,7 +117,21 @@ internal class GetAppUpdateInfo private constructor(
             crashedInLastProcess = crashedInLastProcess,
             lastCrashMessage = lastCrashMessage,
             updatedOsSinceLastStart = updatedOsSinceLastStart,
+            lastExitInformation = lastExitInformation
         )
+    }
+
+    private fun getLastExitInformation(): ApplicationExitInfo? {
+        val am = application.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val exitList = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            am.getHistoricalProcessExitReasons(application.packageName, 0, 1)
+        } else {
+            return null
+        }
+        if (exitList.isEmpty()) {
+            return null
+        }
+        return exitList.first()
     }
 
     private fun onAppCrashing(exception: Throwable) {
@@ -158,7 +163,7 @@ internal class GetAppUpdateInfo private constructor(
         private const val UNKNOWN_BUILD_FINGERPRINT = "UNKNOWN_BUILD_FINGERPRINT"
 
         fun Application.recordColdStartAndTrackAppUpgrade(): AppUpdateData {
-            val detector = GetAppUpdateInfo(this)
+            val detector = GetAppUpdateAndLastProcessInfo(this)
 
             val defaultExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
             Thread.setDefaultUncaughtExceptionHandler { thread, exception ->
