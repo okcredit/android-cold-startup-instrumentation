@@ -114,15 +114,18 @@ internal class GetAppUpdateInfo private constructor(
         val allVersionCodes = allVersionCodesString.split(", ")
             .map { it.toInt() }
 
+        val lastColdLaunchTime = preferences.getLong(LAST_COLD_LAUNCH_TIME, -1L)
+
         return AppUpdateData(
             status = status,
             firstInstallTimeMillis = appPackageInfo.firstInstallTime,
             lastUpdateTimeMillis = appPackageInfo.lastUpdateTime,
+            lastColdLaunchTimeMillis = lastColdLaunchTime,
             allInstalledVersionNames = allVersionNames,
             allInstalledVersionCodes = allVersionCodes,
             crashedInLastProcess = crashedInLastProcess,
             lastCrashMessage = lastCrashMessage,
-            updatedOsSinceLastStart = updatedOsSinceLastStart
+            updatedOsSinceLastStart = updatedOsSinceLastStart,
         )
     }
 
@@ -130,7 +133,13 @@ internal class GetAppUpdateInfo private constructor(
         preferences.edit()
             .putLong(CRASH_REALTIME_KEY, SystemClock.elapsedRealtime())
             .putString(CRASH_MESSAGE, exception.message)
-            .commit()
+            .apply()
+    }
+
+    private fun recordColdStart() {
+        preferences.edit()
+            .putLong(LAST_COLD_LAUNCH_TIME, System.currentTimeMillis())
+            .apply()
     }
 
     companion object {
@@ -143,11 +152,12 @@ internal class GetAppUpdateInfo private constructor(
         private const val CRASH_REALTIME_KEY = "crash_realtime"
         private const val CRASH_MESSAGE = "crash_message"
         private const val BUILD_FINGERPRINT_KEY = "build_fingerprint"
+        private const val LAST_COLD_LAUNCH_TIME = "last_cold_launch_time"
         private const val NO_CRASH = -1L
         private const val UNKNOWN_CRASH = -2L
         private const val UNKNOWN_BUILD_FINGERPRINT = "UNKNOWN_BUILD_FINGERPRINT"
 
-        fun Application.trackAppUpgrade(): AppUpdateData {
+        fun Application.recordColdStartAndTrackAppUpgrade(): AppUpdateData {
             val detector = GetAppUpdateInfo(this)
 
             val defaultExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
@@ -156,7 +166,9 @@ internal class GetAppUpdateInfo private constructor(
                 defaultExceptionHandler?.uncaughtException(thread, exception)
             }
 
-            return detector.readAndUpdate()
+            val data = detector.readAndUpdate()
+            detector.recordColdStart()
+            return data
         }
     }
 }

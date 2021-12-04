@@ -17,6 +17,11 @@ data class AppUpdateData(
     val lastUpdateTimeMillis: Long,
 
     /**
+     * Last cold startup time
+     */
+    val lastColdLaunchTimeMillis: Long,
+
+    /**
      * List of all [android.content.pm.PackageInfo.versionName] values for all installs of the app,
      * most recent first.
      */
