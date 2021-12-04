@@ -55,7 +55,7 @@ On AppStartUpTracer.onAppLaunchListener() 2nd parameter takes a lambda which ret
 | durationFromLastAppStop     | Duration from last app stop to launch  |
 | resumeActivityName     | Name of launch activity |
 | resumeActivityReferrer     | Information about who launched the first activity. See details [here] |
-| resumeActivityIntentData     | Intent of resumed activity |
+| resumeActivityIntent     | Intent of resumed activity |
 
 
 

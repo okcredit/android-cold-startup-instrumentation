@@ -98,7 +98,7 @@ internal class AppStartMeasureLifeCycleCallBacks(
                                     importance = processInfo?.importance,
                                     resumeActivityName = onCreateRecord.activityName,
                                     resumeActivityReferrer = onCreateRecord.referrer,
-                                    resumeActivityIntentData = onCreateRecord.intent
+                                    resumeActivityIntent = onCreateRecord.intent
                                 )
                             )
                         }
@@ -127,13 +127,7 @@ internal class AppStartMeasureLifeCycleCallBacks(
                                 )
                             }
                         }
-                    } else -> {
-                    appLaunchCallback.invoke(
-                        AppLaunchMetrics.ErrorRetrievingAppLaunchData(
-                            IllegalStateException("App Launched from background")
-                        )
-                    )
-                }
+                    }
                 }
             }
         }

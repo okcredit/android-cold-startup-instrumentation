@@ -71,8 +71,18 @@ sealed class AppLaunchMetrics {
         /**
          * Return information about resumed activity intent.
          */
-        val resumeActivityIntentData: Intent?,
-    ) : AppLaunchMetrics()
+        val resumeActivityIntent: Intent?,
+    ) : AppLaunchMetrics() {
+        fun getStartType() : String {
+            return if (activityState == ActivityState.CREATED_NO_STATE || activityState == ActivityState.CREATED_WITH_STATE) {
+                "Warm"
+            } else if (activityState == ActivityState.CREATED_NO_STATE || activityState == ActivityState.CREATED_WITH_STATE) {
+                "Hot"
+            } else {
+                "Unknown"
+            }
+        }
+    }
 }
 
 data class WarmAndHotStartUpMetrics(
