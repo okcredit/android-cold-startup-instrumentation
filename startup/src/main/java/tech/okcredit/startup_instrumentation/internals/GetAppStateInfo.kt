@@ -6,13 +6,14 @@ import android.app.ApplicationExitInfo
 import android.content.Context
 import android.os.Build
 import android.os.SystemClock
-import tech.okcredit.startup_instrumentation.internals.data.AppUpdateData
+import tech.okcredit.startup_instrumentation.internals.data.AppStateInfo
 import tech.okcredit.startup_instrumentation.internals.data.AppUpdateStartStatus
+import java.util.*
 
 /**
  * Collect info regarding app updates like app starts after first install, an update, or a crash.
  */
-internal class GetAppUpdateAndLastProcessInfo private constructor(
+internal class GetAppStateInfo private constructor(
     private val application: Application
 ) {
 
@@ -20,7 +21,7 @@ internal class GetAppUpdateAndLastProcessInfo private constructor(
         application.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
     }
 
-    private fun readAndUpdate(): AppUpdateData {
+    private fun readAndUpdate(): AppStateInfo {
         val appPackageInfo = application.packageManager.getPackageInfo(application.packageName, 0)!!
 
         var allVersionNamesString: String
@@ -105,12 +106,14 @@ internal class GetAppUpdateAndLastProcessInfo private constructor(
             .map { it.toInt() }
 
         val lastColdLaunchTime = preferences.getLong(LAST_COLD_LAUNCH_TIME, -1L)
+        val lastActivityTime = preferences.getLong(LAST_ACTIVITY_TIME, 0L)
         val lastExitInformation = getLastExitInformation()
 
-        return AppUpdateData(
+        return AppStateInfo(
             status = status,
             firstInstallTimeMillis = appPackageInfo.firstInstallTime,
             lastUpdateTimeMillis = appPackageInfo.lastUpdateTime,
+            lastActiveTime = lastActivityTime,
             lastColdLaunchTimeMillis = lastColdLaunchTime,
             allInstalledVersionNames = allVersionNames,
             allInstalledVersionCodes = allVersionCodes,
@@ -154,6 +157,7 @@ internal class GetAppUpdateAndLastProcessInfo private constructor(
         private const val VERSION_NAME_KEY = "app_version_name"
         private const val ALL_VERSION_NAMES_KEY = "app_all_version_names"
         private const val ALL_VERSION_CODES_KEY = "app_all_version_codes"
+        private const val LAST_ACTIVITY_TIME = "last_activity_time"
         private const val CRASH_REALTIME_KEY = "crash_realtime"
         private const val CRASH_MESSAGE = "crash_message"
         private const val BUILD_FINGERPRINT_KEY = "build_fingerprint"
@@ -162,8 +166,8 @@ internal class GetAppUpdateAndLastProcessInfo private constructor(
         private const val UNKNOWN_CRASH = -2L
         private const val UNKNOWN_BUILD_FINGERPRINT = "UNKNOWN_BUILD_FINGERPRINT"
 
-        fun Application.recordColdStartAndTrackAppUpgrade(): AppUpdateData {
-            val detector = GetAppUpdateAndLastProcessInfo(this)
+        fun Application.recordColdStartAndTrackAppUpgrade(): AppStateInfo {
+            val detector = GetAppStateInfo(this)
 
             val defaultExceptionHandler = Thread.getDefaultUncaughtExceptionHandler()
             Thread.setDefaultUncaughtExceptionHandler { thread, exception ->
@@ -174,6 +178,18 @@ internal class GetAppUpdateAndLastProcessInfo private constructor(
             val data = detector.readAndUpdate()
             detector.recordColdStart()
             return data
+        }
+
+        fun Application.recordLastActivity() {
+            val preferences = this.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+
+            Timer().schedule(object : TimerTask() {
+                override fun run() {
+                    preferences.edit()
+                        .putLong(LAST_ACTIVITY_TIME, System.currentTimeMillis())
+                        .apply()
+                }
+            }, 1000)
         }
     }
 }

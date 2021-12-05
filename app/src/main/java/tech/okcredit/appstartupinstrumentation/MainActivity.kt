@@ -16,5 +16,9 @@ class MainActivity : AppCompatActivity() {
         findViewById<View>(R.id.hello_world).setOnClickListener {
             startActivity(Intent(this, MainActivity::class.java))
         }
+
+        val intent = Intent(this, MainActivity::class.java)
+
+
     }
 }

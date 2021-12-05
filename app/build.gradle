@@ -42,4 +42,5 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
 
     implementation project(':startup')
+//    implementation 'com.github.okcredit:android-cold-startup-instrumentation:2.00-dev'
 }

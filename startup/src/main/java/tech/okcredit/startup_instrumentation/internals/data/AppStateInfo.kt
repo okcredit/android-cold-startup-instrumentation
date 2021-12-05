@@ -6,7 +6,7 @@ import android.os.Build
 /**
  * Info regarding app updates like app starts after first install, an update, or a crash.
  */
-data class AppUpdateData(
+data class AppStateInfo(
     val status: AppUpdateStartStatus,
 
     /**
@@ -18,6 +18,11 @@ data class AppUpdateData(
      * See [android.content.pm.PackageInfo.lastUpdateTime]
      */
     val lastUpdateTimeMillis: Long,
+
+    /**
+     * Last active time. Updating value from start and pause of every activity
+     */
+    val lastActiveTime: Long,
 
     /**
      * Last cold startup time

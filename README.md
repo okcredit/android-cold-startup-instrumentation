@@ -39,7 +39,7 @@ On AppStartUpTracer.onAppLaunchListener() 2nd parameter takes a lambda which ret
 | ColdStartUpData  | Details       |
 | -------------    | ------------- |
 | startUpMetrics   | It Contains cold startup duration from Process start to the first draw and the time difference between multiple splits mentioned in [Phases of App Cold StartUp]() |
-| appUpdateData     | It Contains information regarding app updates like app starts after the first install, an update, first install after clearing data or a crash. it also tracks reason for last app exit, first Install time, last updated time, last cold startup time, version details of all installed versions  |
+| appStateInfo     | It Contains information regarding app updates like app starts after the first install, an update, first install after clearing data or a crash. it also tracks reason for last app exit, first Install time, last updated time, last cold startup time, version details of all installed versions  |
 | firstActivityName     | Name of first activity  |
 | firstActivityReferrer     | Information about who launched the first activity. See details [here](https://developer.android.com/reference/android/app/Activity#getReferrer())  |
 | firstActivityIntent     | Intent of first activity. we are exposing intent for tracking notification details on app launch |
@@ -51,6 +51,7 @@ On AppStartUpTracer.onAppLaunchListener() 2nd parameter takes a lambda which ret
 | -------------    | ------------- |
 | warmAndHotStartUpMetrics   | It Contains hot and warm startup metrics from activity resume/create to draw.  |
 | activityState     | State of activity when user returns back to App.<br/> <br/> CREATED_NO_STATE(Warm Launch) - The activity was created with no state bundle and then resumed  <br/> CREATED_WITH_STATE(Warm Launch) - The activity was created with a state bundle and then resumed <br/> STARTED(Hot Launch) - The activity already created. it was started and then resumed when user launch the app <br/> RESUMED(Hot Launch) - The activity already created and started. it was then just resumed when user launch the app |
+| appStateInfo     | It Contains information regarding app updates like app starts after the first install, an update, first install after clearing data or a crash. it also tracks reason for last app exit, first Install time, last updated time, last cold startup time, version details of all installed versions  |
 | importance     | The relative importance level that the system places on this process. See details [here](https://developer.android.com/reference/android/app/ActivityManager.RunningAppProcessInfo#importance)  |
 | durationFromLastAppStop     | Duration from last app stop to launch  |
 | resumeActivityName     | Name of launch activity |

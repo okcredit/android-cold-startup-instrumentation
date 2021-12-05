@@ -14,9 +14,9 @@ sealed class AppLaunchMetrics {
         val startUpMetrics: AppStartUpTracer.AppStartUpMetrics,
 
         /**
-         * The Info regarding app update.
+         * The Info regarding app state.
          */
-        val appUpdateData: AppUpdateData,
+        val appStateInfo: AppStateInfo,
 
         /**
          * The First Activity name which opened first.
@@ -40,6 +40,11 @@ sealed class AppLaunchMetrics {
          * The Tech metrics regarding warm and hot startup performance.
          */
         val warmAndHotStartUpMetrics: WarmAndHotStartUpMetrics,
+
+        /**
+         * The Info regarding app state.
+         */
+        val appStateInfo: AppStateInfo,
 
         /**
          * State of activity when user returns back to App.

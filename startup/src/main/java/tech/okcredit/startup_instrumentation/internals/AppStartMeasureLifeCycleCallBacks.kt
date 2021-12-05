@@ -9,7 +9,8 @@ import tech.okcredit.startup_instrumentation.AppStartUpTracer
 import tech.okcredit.startup_instrumentation.AppStartUpTracer.currentAppLaunchProcessed
 import tech.okcredit.startup_instrumentation.AppStartUpTracer.isFirstPostExecuted
 import tech.okcredit.startup_instrumentation.AppStartUpTracer.lastAppPauseTime
-import tech.okcredit.startup_instrumentation.internals.GetAppUpdateAndLastProcessInfo.Companion.recordColdStartAndTrackAppUpgrade
+import tech.okcredit.startup_instrumentation.internals.GetAppStateInfo.Companion.recordColdStartAndTrackAppUpgrade
+import tech.okcredit.startup_instrumentation.internals.GetAppStateInfo.Companion.recordLastActivity
 import tech.okcredit.startup_instrumentation.internals.app_lifecycle.RecordOfActivityLifecycle.createdActivityHashes
 import tech.okcredit.startup_instrumentation.internals.app_lifecycle.RecordOfActivityLifecycle.recordActivityCreated
 import tech.okcredit.startup_instrumentation.internals.app_lifecycle.RecordOfActivityLifecycle.recordActivityResumed
@@ -17,7 +18,7 @@ import tech.okcredit.startup_instrumentation.internals.app_lifecycle.RecordOfAct
 import tech.okcredit.startup_instrumentation.internals.app_lifecycle.RecordOfActivityLifecycle.resumedActivityHashes
 import tech.okcredit.startup_instrumentation.internals.app_lifecycle.RecordOfActivityLifecycle.startedActivityHashes
 import tech.okcredit.startup_instrumentation.internals.data.AppLaunchMetrics
-import tech.okcredit.startup_instrumentation.internals.data.AppUpdateData
+import tech.okcredit.startup_instrumentation.internals.data.AppStateInfo
 import tech.okcredit.startup_instrumentation.internals.data.ActivityState
 import tech.okcredit.startup_instrumentation.internals.data.WarmAndHotStartUpMetrics
 import tech.okcredit.startup_instrumentation.internals.utils.AppStartUpMeasurementUtils
@@ -78,6 +79,7 @@ internal class AppStartMeasureLifeCycleCallBacks(
                             }
                         }
 
+                        val appStateInfo = context.recordColdStartAndTrackAppUpgrade()
 
                         activity.window?.decorView?.onNextDraw {
                             appLaunchCallback.invoke(
@@ -93,6 +95,7 @@ internal class AppStartMeasureLifeCycleCallBacks(
                                             identityHash
                                         ).start - startedActivityHashes.getValue(identityHash).start,
                                     ),
+                                    appStateInfo = appStateInfo,
                                     activityState = temperature,
                                     durationFromLastAppStop = lastAppPauseTime?.let { SystemClock.uptimeMillis() - it },
                                     importance = processInfo?.importance,
@@ -104,7 +107,7 @@ internal class AppStartMeasureLifeCycleCallBacks(
                         }
                     }
                     processInfo?.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND -> {
-                        val appUpdateData: AppUpdateData = context.recordColdStartAndTrackAppUpgrade()
+                        val appStateInfo: AppStateInfo = context.recordColdStartAndTrackAppUpgrade()
 
                         activity.window?.decorView?.onNextDraw {
                             AppStartUpTracer.firstDrawTime = SystemClock.uptimeMillis()
@@ -113,7 +116,7 @@ internal class AppStartMeasureLifeCycleCallBacks(
                                 appLaunchCallback.invoke(
                                     AppLaunchMetrics.ColdStartUpData(
                                         startUpMetrics = AppStartUpTracer.AppStartUpMetrics(),
-                                        appUpdateData = appUpdateData,
+                                        appStateInfo = appStateInfo,
                                         firstActivityIntent = AppStartUpTracer.firstActivityIntent,
                                         firstActivityName = AppStartUpTracer.firstActivityName,
                                         firstActivityReferrer = AppStartUpTracer.firstActivityReferrer,
@@ -130,11 +133,16 @@ internal class AppStartMeasureLifeCycleCallBacks(
                     }
                 }
             }
+            context.recordLastActivity()
         }
     }
 
     override fun onActivityPaused(activity: Activity) {
         resumedActivityHashes -= Integer.toHexString(System.identityHashCode(activity))
+
+        AppStartUpMeasurementUtils.getSingleThreadExecutorForLaunchTracker().execute {
+            context.recordLastActivity()
+        }
     }
 
     override fun onActivityPreStarted(activity: Activity) {
