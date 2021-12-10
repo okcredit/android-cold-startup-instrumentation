@@ -6,6 +6,8 @@ import android.os.Looper
 import android.view.View
 import android.view.ViewTreeObserver
 import androidx.annotation.RequiresApi
+import java.lang.Exception
+import java.lang.RuntimeException
 
 @RequiresApi(Build.VERSION_CODES.JELLY_BEAN)
 class NextDrawListener(
@@ -20,7 +22,13 @@ class NextDrawListener(
     override fun onDraw() {
         if (invokedInitialOnDraw) return
         invokedInitialOnDraw = true
-        onDrawCallback()
+        try {
+            onDrawCallback()
+        } catch (e: NoSuchElementException) {
+            // The callback being requested does not exist on window
+        } catch (e: Exception) {
+            throw RuntimeException(e)
+        }
         handler.post {
             if (view.viewTreeObserver.isAlive) {
                 view.viewTreeObserver.removeOnDrawListener(this)

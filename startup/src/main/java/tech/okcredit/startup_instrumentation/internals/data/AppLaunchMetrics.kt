@@ -81,7 +81,7 @@ sealed class AppLaunchMetrics {
         fun getStartType() : String {
             return if (activityState == ActivityState.CREATED_NO_STATE || activityState == ActivityState.CREATED_WITH_STATE) {
                 "Warm"
-            } else if (activityState == ActivityState.CREATED_NO_STATE || activityState == ActivityState.CREATED_WITH_STATE) {
+            } else if (activityState == ActivityState.STARTED || activityState == ActivityState.RESUMED) {
                 "Hot"
             } else {
                 "Unknown"
