@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.Process
 import android.os.SystemClock
+import android.util.Log
 import androidx.annotation.RequiresApi
 import org.jetbrains.annotations.NonNls
 import tech.okcredit.startup_instrumentation.internals.AppStartMeasureLifeCycleCallBacks
@@ -133,6 +134,7 @@ object AppStartUpTracer {
                 )
                 context.registerActivityLifecycleCallbacks(appStartMeasureLifeCycleCallBacks)
 
+                appOnCreateEndTime = SystemClock.uptimeMillis()
                 setProcessData()
             }
         }
@@ -154,6 +156,7 @@ object AppStartUpTracer {
 
                 context.registerActivityLifecycleCallbacks(appStartMeasureLifeCycleCallBacks)
 
+                appOnCreateEndTime = SystemClock.uptimeMillis()
                 setProcessData()
             }
         }
@@ -166,6 +169,18 @@ object AppStartUpTracer {
         } else {
             AppStartUpMeasurementUtils.getProcessForkTime()
         }
-        appOnCreateEndTime = SystemClock.uptimeMillis()
+        /***
+         * https://dev.to/pyricau/android-vitals-when-did-my-app-start-24p4
+         * Process.getStartUptimeMillis() is sometimes way off.
+         * The interval between content provider start was greater
+         * than 30 sec for 0.5% of app starts.
+         * This might be due to some systems keeping a pool
+         * of pre forked zygotes to accelerate app start.
+         * falling back process Start time to contentProvider StartedTime.
+         */
+        Log.d("<<<<Diff", "is ${contentProviderStartedTime - processForkTime}")
+        if (contentProviderStartedTime - processForkTime > 30_000) {
+            processForkTime = contentProviderStartedTime
+        }
     }
 }
