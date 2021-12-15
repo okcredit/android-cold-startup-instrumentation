@@ -82,6 +82,7 @@ internal class AppStartMeasureLifeCycleCallBacks(
                         val appStateInfo = context.recordColdStartAndTrackAppUpgrade()
 
                         activity.window?.decorView?.onNextDraw {
+                            if (!resumedActivityHashes.containsKey(identityHash)) { return@onNextDraw }
                             appLaunchCallback.invoke(
                                 AppLaunchMetrics.WarmAndHotStartUpData(
                                     warmAndHotStartUpMetrics = WarmAndHotStartUpMetrics(
