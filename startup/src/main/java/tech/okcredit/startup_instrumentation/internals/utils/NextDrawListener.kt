@@ -22,13 +22,7 @@ class NextDrawListener(
     override fun onDraw() {
         if (invokedInitialOnDraw) return
         invokedInitialOnDraw = true
-        try {
-            onDrawCallback()
-        } catch (e: NoSuchElementException) {
-            // The callback being requested does not exist on window
-        } catch (e: Exception) {
-            throw RuntimeException(e)
-        }
+        onDrawCallback()
         handler.post {
             if (view.viewTreeObserver.isAlive) {
                 view.viewTreeObserver.removeOnDrawListener(this)
