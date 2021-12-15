@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.SystemClock
 import tech.okcredit.startup_instrumentation.internals.data.AppStateInfo
 import tech.okcredit.startup_instrumentation.internals.data.AppUpdateStartStatus
+import java.lang.Exception
 import java.util.*
 
 /**
@@ -125,16 +126,20 @@ internal class GetAppStateInfo private constructor(
     }
 
     private fun getLastExitInformation(): ApplicationExitInfo? {
-        val am = application.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-        val exitList = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            am.getHistoricalProcessExitReasons(application.packageName, 0, 1)
-        } else {
+        try {
+            val am = application.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+            val exitList = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                am.getHistoricalProcessExitReasons(application.packageName, 0, 1)
+            } else {
+                return null
+            }
+            if (exitList.isEmpty()) {
+                return null
+            }
+            return exitList.first()
+        } catch (e: Exception) {
             return null
         }
-        if (exitList.isEmpty()) {
-            return null
-        }
-        return exitList.first()
     }
 
     private fun onAppCrashing(exception: Throwable) {
