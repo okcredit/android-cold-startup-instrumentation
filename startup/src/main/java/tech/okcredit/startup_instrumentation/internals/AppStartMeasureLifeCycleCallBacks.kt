@@ -71,11 +71,16 @@ internal class AppStartMeasureLifeCycleCallBacks(
                                 ActivityState.CREATED_NO_STATE
                             }
                         } else {
-                            val onStartRecord = startedActivityHashes.getValue(identityHash)
-                            if (onStartRecord.sameMessage) {
+                            if (!startedActivityHashes.containsKey(identityHash)) {
+                                //Activity is getting resumed without start at times (0.02% launch). Assuming state is started here. Need to figureout the reason behind it
                                 ActivityState.STARTED
                             } else {
-                                ActivityState.RESUMED
+                                val onStartRecord = startedActivityHashes.getValue(identityHash)
+                                if (onStartRecord.sameMessage) {
+                                    ActivityState.STARTED
+                                } else {
+                                    ActivityState.RESUMED
+                                }
                             }
                         }
 
