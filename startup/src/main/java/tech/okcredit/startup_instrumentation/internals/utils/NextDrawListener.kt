@@ -6,8 +6,7 @@ import android.os.Looper
 import android.view.View
 import android.view.ViewTreeObserver
 import androidx.annotation.RequiresApi
-import java.lang.Exception
-import java.lang.RuntimeException
+import java.lang.IllegalStateException
 
 @RequiresApi(Build.VERSION_CODES.JELLY_BEAN)
 class NextDrawListener(
@@ -50,9 +49,11 @@ class NextDrawListener(
 
         @RequiresApi(Build.VERSION_CODES.JELLY_BEAN)
         internal fun View.addNextDrawListener(callback: () -> Unit) {
-            viewTreeObserver.addOnDrawListener(
-                NextDrawListener(this, callback)
-            )
+            try {
+                viewTreeObserver.addOnDrawListener(
+                    NextDrawListener(this, callback)
+                )
+            } catch (e: IllegalStateException) { }
         }
     }
 }
