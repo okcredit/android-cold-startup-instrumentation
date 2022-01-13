@@ -62,6 +62,10 @@ internal class AppStartMeasureLifeCycleCallBacks(
 
                 when {
                     isFirstPostExecuted -> { // Hot and Warm StartUp
+                        //Activity is getting resumed without create at times (0.00003% launch). Assuming state is started here. Need to figureout the reason behind it
+                        if (!createdActivityHashes.containsKey(identityHash)) {
+                            return@execute
+                        }
                         val onCreateRecord = createdActivityHashes.getValue(identityHash)
 
                         val temperature = if (onCreateRecord.sameMessage) {
