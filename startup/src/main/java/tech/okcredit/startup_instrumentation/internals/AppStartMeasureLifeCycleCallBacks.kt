@@ -92,6 +92,7 @@ internal class AppStartMeasureLifeCycleCallBacks(
 
                         activity.window?.decorView?.onNextDraw {
                             if (!resumedActivityHashes.containsKey(identityHash)) { return@onNextDraw }
+                            if (!startedActivityHashes.containsKey(identityHash)) { return@onNextDraw }
                             appLaunchCallback.invoke(
                                 AppLaunchMetrics.WarmAndHotStartUpData(
                                     warmAndHotStartUpMetrics = WarmAndHotStartUpMetrics(
