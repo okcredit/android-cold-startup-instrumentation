@@ -143,6 +143,7 @@ object AppStartUpTracer {
     /**
      * Uses for tracking AppLaunch. Call this at the end of App OnCreate.
      */
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     fun onAppLaunchListener(context: Application, responseCallback: (AppLaunchMetrics) -> Unit) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             ProcessLifecycleHandler.updateAppLifecycle()
