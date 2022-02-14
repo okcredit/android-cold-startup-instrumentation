@@ -32,6 +32,7 @@ class NextDrawListener(
     companion object {
         @RequiresApi(Build.VERSION_CODES.KITKAT)
         fun View.onNextDraw(onDrawCallback: () -> Unit) {
+            if (viewTreeObserver == null) { return }
             if (viewTreeObserver.isAlive && isAttachedToWindow) {
                 addNextDrawListener(onDrawCallback)
             } else {
@@ -50,6 +51,7 @@ class NextDrawListener(
         @RequiresApi(Build.VERSION_CODES.JELLY_BEAN)
         internal fun View.addNextDrawListener(callback: () -> Unit) {
             try {
+                if (viewTreeObserver == null) { return }
                 viewTreeObserver.addOnDrawListener(
                     NextDrawListener(this, callback)
                 )

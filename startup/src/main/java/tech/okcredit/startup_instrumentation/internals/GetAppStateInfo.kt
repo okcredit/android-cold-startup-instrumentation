@@ -104,7 +104,7 @@ internal class GetAppStateInfo private constructor(
 
         val allVersionNames = allVersionNamesString.split(", ")
         val allVersionCodes = allVersionCodesString.split(", ")
-            .map { it.toInt() }
+            .map { if (it.isEmpty().not()) it.toInt() else -1 }
 
         val lastColdLaunchTime = preferences.getLong(LAST_COLD_LAUNCH_TIME, -1L)
         val lastActivityTime = preferences.getLong(LAST_ACTIVITY_TIME, 0L)
