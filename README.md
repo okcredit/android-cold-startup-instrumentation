@@ -9,7 +9,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.okcredit:android-cold-startup-instrumentation:2.0-alpha'
+    implementation 'com.github.okcredit:android-cold-startup-instrumentation:2.0'
 }
 ```
 
