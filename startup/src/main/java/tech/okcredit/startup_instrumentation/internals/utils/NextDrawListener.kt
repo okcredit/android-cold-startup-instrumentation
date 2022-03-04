@@ -1,4 +1,4 @@
-package tech.okcredit.startup_instrumentation.internals
+package tech.okcredit.startup_instrumentation.internals.utils
 
 import android.os.Build
 import android.os.Handler
@@ -6,6 +6,7 @@ import android.os.Looper
 import android.view.View
 import android.view.ViewTreeObserver
 import androidx.annotation.RequiresApi
+import java.lang.IllegalStateException
 
 @RequiresApi(Build.VERSION_CODES.JELLY_BEAN)
 class NextDrawListener(
@@ -31,6 +32,7 @@ class NextDrawListener(
     companion object {
         @RequiresApi(Build.VERSION_CODES.KITKAT)
         fun View.onNextDraw(onDrawCallback: () -> Unit) {
+            if (viewTreeObserver == null) { return }
             if (viewTreeObserver.isAlive && isAttachedToWindow) {
                 addNextDrawListener(onDrawCallback)
             } else {
@@ -48,9 +50,12 @@ class NextDrawListener(
 
         @RequiresApi(Build.VERSION_CODES.JELLY_BEAN)
         internal fun View.addNextDrawListener(callback: () -> Unit) {
-            viewTreeObserver.addOnDrawListener(
-                NextDrawListener(this, callback)
-            )
+            try {
+                if (viewTreeObserver == null) { return }
+                viewTreeObserver.addOnDrawListener(
+                    NextDrawListener(this, callback)
+                )
+            } catch (e: IllegalStateException) { }
         }
     }
 }
