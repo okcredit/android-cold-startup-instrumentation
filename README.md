@@ -38,7 +38,7 @@ On AppStartUpTracer.onAppLaunchListener() 2nd parameter takes a lambda which ret
 
 | ColdStartUpData  | Details       |
 | -------------    | ------------- |
-| startUpMetrics   | It Contains cold startup duration from Process start to the first draw and the time difference between multiple splits mentioned in [Phases of App Cold StartUp]() |
+| startUpMetrics   | It Contains cold startup duration from Process start to the first draw and the time difference between multiple splits mentioned in [Phases of App Cold StartUp](https://github.com/okcredit/android-cold-startup-instrumentation#app-cold-startup) |
 | appStateInfo     | It Contains information regarding app updates like app starts after the first install, an update, first install after clearing data or a crash. it also tracks reason for last app exit, first Install time, last updated time, last cold startup time, version details of all installed versions  |
 | firstActivityName     | Name of first activity  |
 | firstActivityReferrer     | Information about who launched the first activity. See details [here](https://developer.android.com/reference/android/app/Activity#getReferrer())  |
